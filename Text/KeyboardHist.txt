@@ -1,0 +1,268 @@
+Funktionsweise der Computertastatur
+Grundsätzlich ist es nicht sinnvoll, jede einzelne Taste direkt am Tastaturcontroller anzuschließen, das würde eine große Anzahl von Anschlüssen am Controller und entsprechenden Verdrahtungsaufwand bedingen. Die einzelnen Tasten sind stattdessen in einer elektrischen Matrix aus Zeilen- und Spaltenleitungen angeordnet. Wird eine Taste gedrückt, so wird eine bestimmte Zeile mit einer bestimmten Spalte elektrisch verbunden. Diese Verbindung wertet ein Mikrocontroller (früher zum Beispiel bei XT-Tastaturen ein Mikroprozessor 8042) aus und schickt diese Information zum Rechner – bei der heute vorherrschenden IBM-PC-Architektur (auch beim Apple Macintosh) als sogenannter Tastencode (englisch Scancode). Damit sind zum Beispiel bei einer 16×8-Matrix mit 24 Leitungen bis zu 128 Tasten realisierbar.
+
+Dieses Funktionsprinzip ist nahezu universell auf alle modernen Eingabegeräte mit mehreren Tasten anwendbar. Bei einigen älteren Architekturen übernahm der Hauptprozessor des Rechners selbst die Tastaturabfrage, zum Beispiel beim Commodore PET 2001, Commodore 64, Atari 800 und Sharp MZ-700.
+
+Vom Tastendruck zum Scancode
+
+Beispiel-Schema für ein 10-Tasten-Scannen mit drei Spalten und vier Zeilen.
+
+3-lagige Tastaturfolie/Membrane, welche die zweidimensionale Tastenadressierung über 13 Spalten und 13 Zeilen ermöglicht. Die erste Folie enthält die Spalten-Kontakte pro Taste, darüber kommt eine Abstandsfolie und dann die Folie mit den Zeilen-Kontakten für jede Taste.
+Die Tastatur-Matrix besteht beispielsweise aus 13 Spalten und 8 Zeilen (104 Tasten). Zunächst wird der Ausgang für die erste Spalte aktiviert (aufgrund der negativen Logik auf eine niedrige elektrische Spannung gezogen) und dann überprüft, ob sich an einem oder mehreren der acht Eingänge der Zeilen diese niedrige Spannung wiederfindet. Dann wird der Ausgang für die erste Spalte wieder deaktiviert (hochohmig geschaltet) und der für die zweite Spalte aktiviert, und so weiter. Nach der letzten Spalte wird, eventuell nach einer Pause, wieder bei der ersten Spalte begonnen. Dieser Vorgang wiederholt sich kontinuierlich, mindestens einige dutzendmal pro Sekunde, und nennt sich „Scannen“. Wenn eine Taste gedrückt wird, wird bei einer bestimmten aktiven Spalte die Verbindung zur Zeile erkannt. Aus der Koordinate innerhalb der Spalten- und Zeilenmatrix ermittelt der Tastatur-Prozessor eine Tastennummer, die dann in einen Code für die Tastenposition, den Scancode, umgewandelt wird. Dieser wird zum Rechner übertragen. Dabei spielt es keine Rolle, welche (nationale) Tastaturbelegung (engl. „keyboard layout“) verwendet wird; der Scancode gibt nur die Position der gedrückten Taste für eine Standardtastatur an, unabhängig von der äußerlichen Anordnung, der Sprachauswahl des Betriebssystems oder der Beschriftung der Tasten.
+
+Detailliertere Informationen zu den verschiedenen Scancodes, die speziell von heutigen Windows-PC-Tastaturen verwendet werden, und zu den Tastatur-Steuercodes findet man unter Scancode bzw. Tastaturbelegung.
+
+Key Rollover
+1	2	3
+A	u	v	w
+B	x	y	z
+Allgemein, sei es eine Tastatur eines elektronischen Musikinstrumentes oder eine Computer-Tastatur, kann es vorkommen, dass mehr als eine Taste gleichzeitig gedrückt wird. Je nach Bauart der Tastatur kann diese, im schlechtesten Fall, maximal zwei gleichzeitige Tastendrücke richtig erkennen (2-key rollover) oder im besten Fall alle (n-key rollover).
+
+Abhängig von der Anordnung der Tasten in der Matrix kann es bei der gleichzeitigen Betätigung von drei oder mehr Tasten zu Fehlerkennungen kommen. Dabei werden möglicherweise Tasten als aktiv erkannt, die tatsächlich nicht betätigt wurden. Dieser Effekt wird Phantom-Key genannt.
+
+Zur Erklärung wird als Beispiel eine 6-Tasten-Tastatur mit zwei Zeilen (A, B) und drei Spalten (1, 2, 3) herangezogen. Werden u = A1, y = B2 und v = A2 gleichzeitig gedrückt, ist es für den Tastaturcontroller nicht möglich zu unterscheiden, ob nur v oder x gedrückt wird oder beide. Wird Zeile A beim Scannen aktiviert, erkennt der Controller korrekt Spalte 1 und 2 entsprechend u und v. Wenn jedoch Zeile B aktiv wird, erkennt der Controller korrekt Spalte 2 für y und fälschlicherweise Spalte 1 für x, weil über y, v und u (von Zeile B auf Spalte 2, zur Zeile A, zu Spalte 1) eine Verbindung mit Spalte 1 existiert. Im Gegensatz dazu ist eine gleichzeitige Betätigung von w = A3 oder z = B3 mit u und y kein Problem und würde sicher erkannt. Generell tritt dieser Effekt auf, wenn drei Ecken eines Rechteckes innerhalb der Matrix betätigt werden.
+
+Eine verbreitete Gegenmaßnahme ist, die Tastenmatrix so anzuordnen, dass bei den üblichen Tastenkombinationen solche Muster nicht auftreten. Hier wird ausgenutzt, dass zum Beispiel nur sehr selten mehrere Zeichentasten gleichzeitig gedrückt werden müssen, während etwa die Kombination „Zeichen und Hochstelltaste“ häufig ist. Zusätzlich haben einige Tastaturen eine Beschränkung der Anzahl der Tasten, die sie gleichzeitig als gedrückt erkennen, zum Beispiel nur zwei Tasten (2-key rollover).
+
+Intelligenter ist eine Erkennung von (möglichen) Phantom-Keys. Da es sehr unwahrscheinlich ist, dass ein Mensch mehrere Tasten so kurz hintereinander bedient, dass der Tastaturcontroller keine Reihenfolge der Betätigung mehr erkennen kann, besteht die Möglichkeit, so lange weitere gleichzeitig aktive Tasten zu erkennen, bis eine Kombination auftritt, die einen Phantom-Key enthalten könnte. Im obenstehenden Beispiel würde das dazu führen, dass zum Beispiel erst u, dann y als aktiv erkannt werden, hier kann kein Phantom-Key auftreten, also werden beide Tasten akzeptiert. Kommt nun noch v hinzu, entsteht der Phantom-Key-Effekt und der Tastaturcontroller ignoriert die Tasten v und x.
+
+Aus Kostengründen nur in Spezialanwendungen zu finden ist die Option, jede Taste mit einer Diode zu versehen, so dass der Strom nur von Zeile zu Spalte fließen kann und nicht umgekehrt (true n-key rollover). Das ist jedoch, abhängig von der Technik des Tastenfeldes, nicht immer realisierbar und in jedem Fall mit höheren Produktionskosten verbunden. Eine Kompromisslösung ist es, eine Mischung aus günstiger Tastenanordnung und Dioden an einigen Tasten zu suchen.
+
+Übertragung zum PC
+DIN 41524-Anschluss und PS/2-Schnittstelle
+
+DIN 41524-Tastaturanschluss
+Sowohl beim Drücken als auch beim Loslassen einer Taste schickt der Tastatur-Controller einen Code zum PC, wodurch in diesem ein Interrupt ausgelöst wird. Die Interrupt-Behandlungsroutine wertet den Scancode der jeweiligen Taste aus, ermittelt, welche der Modifier-Tasten (Umschalttaste, Strg, Alt, Alt Gr, Feststelltaste, Num, Rollen und Einf) zusätzlich aktiv ist, und speichert das Ergebnis im Tastaturpuffer. Das Betriebssystem bzw. aktive Anwendungsprogramm arbeitet mit Software-Interrupts diesen Puffer ab und verknüpft den Scancode nun mit einem Zeichen (Keycode) wie Ziffer, Buchstabe oder Satzzeichen etc. oder einer Aktion (zum Beispiel Programm beenden). Das heißt, die Tastatur liefert nur Tastennummern und keine ASCII-Zeichen, diese Verknüpfung findet erst in der Software des PC-Betriebssystems oder Anwenderprogramms statt.
+
+Die Kommunikation zwischen Tastatur und Computer erfolgt über eine serielle Schnittstelle, so dass nur wenige Adern im Kabel und nur ein kompakter Stecker benötigt werden.
+
+Der Vorgänger der PS/2-Schnittstelle war die PC/XT-Tastaturschnittstelle, die artverwandt in der Funktionsweise ist, aber nur den Datentransfer von der Tastatur zum Computer zulässt. Mit der AT-Tastatur wurde die Schnittstelle bidirektional, um bestimmte Zustände wie zum Beispiel Num-Lock, Caps-Lock und Scroll-Lock über LEDs darstellen zu können.
+
+Bei der PC/XT- und der AT-Schnittstelle kam ein fünfpoliger DIN-Stecker zum Einsatz, der mit Einführung der PS/2-Computerfamilie von IBM durch einen sechspoligen Mini-DIN-Stecker („PS/2-Stecker“) ersetzt wurde. Elektrisch sind AT-Schnittstelle und PS/2 identisch, das Protokoll wurde für die PS/2-Tastaturen erweitert.
+
+USB-Schnittstelle
+Eine über USB angeschlossene Tastatur wird vom Host-Controller als Gerät der Klasse Human Interface Device behandelt. Die dafür nötigen Gerätetreiber sind in jedem USB-kompatiblen Betriebssystem bereits integriert. Die Datenübertragung erfolgt im Interrupt-Transfer. Viele Funktastaturen haben eine USB-Schnittstelle, diese melden sich am System genauso an wie kabelgebundene Tastaturen.
+
+Im Gegensatz zur PS/2- und ADB-Schnittstelle (Apple Desktop Bus) sendet eine USB-Tastatur nicht bei jedem Niederdrücken und Loslassen einer Taste die sogenannten Make- bzw. Break-Codes, sondern einen Datenblock mit Statusinformationen (Flags) für die Umschalttasten und Bytes für die sonstigen Tasten, in dem der gesamte aktuelle Status der Tastatur angegeben wird.
+
+Die USB-Schnittstelle hat gewisse Vorteile gegenüber der PS/2-Schnittstelle:
+
+Geräte können bei laufendem Betrieb angeschlossen oder entfernt werden (sogenannter Hotplug-Mechanismus).
+Der Geräteanschluss ist universell nutzbar, nicht nur für Tastaturen.
+Beliebig viele Tastaturen sind gleichzeitig anschließbar, zum Beispiel ein zusätzlicher Ziffernblock für Linkshänder
+Die Integration von anderen Geräten mit USB-Anschluss in das Tastaturgehäuse zur Platz- und Kostenersparnis ist möglich, zum Beispiel Trackball, Chipkartenlesegerät, USB-Hub.
+Mehr unterschiedliche Tastencodes sind möglich und damit mehr spezialisierte Funktionstasten.
+Es gibt jedoch auch Nachteile gegenüber Tastaturen mit PS/2-Schnittstelle:
+
+Das HID-Protokoll unterstützt maximal 6 gleichzeitig gedrückte gemeine Tasten, während es bei PS/2 keine Beschränkung gibt.
+Hinter der im USB-Standard verwendeten Bezeichnung „Interrupt-Transfer“ verbirgt sich tatsächlich ein Polling-Betrieb. Die CPU fragt die Tastatur in einem festen Zeitraster – typischerweise alle 8 ms – nach ihrem Zustand, während PS/2 echten Interrupt-Betrieb bietet. Das führt nicht nur zu höheren Latenzzeiten, sondern behindert auch Energiesparfunktionen, da die CPU nicht einfach bis zum nächsten Tastendruck „schlafen“ kann, sondern aktiv auf Eingabe prüfen muss.
+Qualitätsmerkmale
+
+Mittels Doppel-Spritzguss-Verfahren (double-shot molding) hergestellte Tasten. Die Beschriftung der Taste wird als separat gegossenes Inlay-Element gefertigt und in eine passende Aussparung eingefügt.
+Mechanische Tastaturen gelten mit bis zu 50 Millionen Anschlägen langlebiger als Rubberdome-Tastaturen, bei denen die Tasten mit einer Art Kuppe aus Silikon oder Gummi in die Ausgangsstellung zurückgeschoben werden.[1]
+
+Ein weiteres Qualitätsmerkmal ist die Laserbeschriftung, die langlebiger ist als beklebte Tasten. Die hochwertigste Beschriftung ist jedoch die nach dem Double-shot-molding-Verfahren gefertigte, bei der eigene Lettern ähnlich einer Schreibmaschine physisch die Buchstaben und Zeichen innerhalb der Tasten bilden. Als Material kommt hier z. B. auch höherwertiger PBT-Kunststoff zum Einsatz, der sich nicht verfärbt und seine Oberflächenbeschaffenheit auch über lange Zeit beibehält.[2]
+
+Weitere Qualitätsmerkmale sind der Spritzwasserschutz einer Tastatur, eine Antihaftversiegelung gegen Schmutz sowie ferner auch Anti-Ghosting für Spieler und Musiker, die auch komplexe Tastenkombinationen verwenden wollen.
+
+Auch die Lautstärke spielt eine gewisse Rolle, mechanische lautere Tastaturen können hier durch sogenannte Gummi-O-Ringe oder eigene MX-Silent Tasten noch etwas gedämpft werden. An die Dämpfung von Rubberdome-Tastaturen kommen diese bisher jedoch nicht heran.
+
+Bauformen und Materialien
+Ergonomische Tastaturen
+
+Maltron-Zweihandtastatur
+
+Ergonomische Tastatur „Microsoft Natural Keyboard 4000“, um 2005
+Spätestens seit den 1970er Jahren gibt es Ansätze, gewissen Problemen, die sich beim Arbeiten mit „normalen“ Tastaturen ergeben können (zum Beispiel RSI-Syndrom), mit neuen, ergonomischen Tastaturen entgegenzuwirken. Diese vermeiden die Anordnung der Tasten in durchgehenden geraden horizontalen Reihen, sondern ordnen sie je nach Konzeption und Bauform in gekrümmten oder geknickten (durchgehenden oder unterbrochenen) Linien oder auch ganz anders an. Auch sind in einigen Konstruktionen Teilbereiche der Tastatur gegenüber der Auflagefläche erhöht.
+
+Eine Entwicklung aus den 1970er Jahren (von Lillian Malt und Stephen Hobday) ist die auch heute (Stand März 2017) noch vertriebene Maltron-Tastatur.[3] Hier sind die Tastenblöcke für linke und rechte Hand getrennt angeordnet mit je einem zusätzlichen Tastenblock für die beiden Daumen. Die Tastatur wird sowohl mit an QWERTY und Dvorak angelehnten Tastaturbelegungen produziert als auch mit einer eigens auf die Ergonomie der Tastatur hin entwickelten.
+
+Die Ergodox-Tastatur[4] verfolgt mit vertikal geradlinig angeordneten Tasten und separaten Tastenblöcken für die Daumen ein ähnliches Konzept wie die Maltron-Tastatur, jedoch sind linke und rechte Tastaturhälfte physikalisch getrennt und somit voneinander unabhängig positionierbar. Hardware und Firmware sind frei lizenziert, die Tastatur kann als Bausatz oder über Dienstleister fertig zusammengebaut erworben werden.
+
+Anfang der 1990er Jahre wurden weitere Tastaturen auf den Markt gebracht (namentlich von der deutschen Firma Marquardt in Zusammenarbeit mit der Fraunhofer-Gesellschaft), die durch eine natürlichere Stellung der Hände ein ermüdungsfreies und gesundes Arbeiten ermöglichen sollen.[5] Diese Tastaturen sind zweigeteilt und A-förmig gebogen. Außerdem sind die beiden Teile wie ein Schwalbenflügel in sich erhöht, und die Tastatur kann – optional – nach hinten abfallen, wohingegen „normale“ Tastaturen nach hinten ansteigen. Die Handballen liegen auf einem Polster auf. Die ergonomische Tastatur ermöglicht eine natürlichere Schreibhaltung als die normale Tastatur, weil die Hände beim Schreiben nicht nach außen und oben gebogen werden müssen, sondern mit dem Unterarm in einer Linie bleiben. Nachteilig sind solche Tastaturen beim „Zweifingersuchsystem“ von Wenigschreibern und bei gleichzeitiger Verwendung von Maus und Tastatur.
+
+Die Ergonomie solcher Tastaturen kommt am ehesten bei Verwendung mit Computerprogrammen zum Tragen, die eine Bedienung auch ohne Maus ermöglichen, weil dabei die Hände auch während längerer Arbeit in der durch die Tastatur ermöglichten Haltung verbleiben können.
+
+Versuche mit vereinfachten Belegungen durch weniger Tasten, zusätzlich farblich gekennzeichnet, vom Unternehmen „New Standard Keyboards“ gingen einen anderen Weg der Optimierung: Skepsis gegenüber bisherigen Ergonomieuntersuchungen führte zur alphabetischen Anordnung der Buchstaben auf den Tasten in Verbindung mit speziellen Tastenpositionierungen.[6][7]
+
+Mit Velotype wurde ein völlig anderer Ansatz gewählt: Statt mit einzelnen Tasten Buchstaben einzugeben, werden hier mit Hilfe von Tastenkombinationen ganze Silben geschrieben. Das System, das heute unter der Bezeichnung „Veyboard“ vermarktet wird, soll eine mehrfach höhere Eingabegeschwindigkeit buchstabenorientierte Tastaturbelegung erlauben. Daher hat es sich in einigen Nischenmärkten wie der Live-Untertitelung durchgesetzt.
+
+Großschrifttastatur
+Eine Großschrifttastatur für Sehbehinderte entspricht einer herkömmlichen PC-Standardtastatur. Die Beschriftung ist allerdings deutlich größer. Die Buchstaben sind hier etwa 10 mm hoch und füllen die Fläche der einzelnen Tasten aus. Dadurch sind sie wesentlich leichter zu lesen als die Standardbeschriftung. Man kann zwischen verschiedenen Gehäuse- und Schriftfarben wählen. Zusätzlich kann die Tastatur mit fühlbaren Markierungen versehen werden.
+
+Wann eine Großschrifttastatur sinnvoll eingesetzt werden kann, hängt von den persönlichen Bedürfnissen des Nutzers ab. Groß beschriftete Tasten sind eine sinnvolle Ausstattung besonders für Computernutzer, die noch nicht lange sehbehindert sind und sich auf der Tastatur nicht sicher fühlen. Die Großschrift eignet sich auch dann gut, wenn man selten benötigte Tasten entspannt finden möchte.
+
+Metalltastaturen
+
+Industrietastatur aus Metall mit integriertem Trackball
+Es gibt Tastaturen aus Edelstahl, Aluminium oder anderen Metallen, die speziell für den Einsatz in rauen, verschmutzten Umgebungen oder in öffentlichen Räumen gedacht sind. Einsatzbereiche sind:
+
+Öffentliche Fernsprecheinrichtungen
+Web-Terminals (zum Beispiel in Internet-Cafés)
+Informationsterminal für Besucher (zum Beispiel in Unternehmen oder Museen)
+Anlagen der Lebensmittelindustrie
+Medizintechnik
+Geldautomaten / Überweisungsautomaten
+Metalltastaturen sind widerstandsfähiger gegenüber mechanischer Beanspruchung, leichter zu reinigen sowie UV- und temperaturunempfindlich. Nachteilig sind das höhere Gewicht und die höheren Herstellungskosten. Auch zum Schreiben längerer Texte sind sie nicht geeignet, da die Tasten meist sehr schwer zu drücken sind.
+
+
+Aufrollbare Tastatur mit Gummitasten
+Darüber hinaus gibt es verschmutzungsresistente Gummitastaturen. Diese werden häufig in Kfz-Werkstätten oder Firmen verwendet, die mit flüssigen Stoffen arbeiten, zum Beispiel mit Öl.
+
+Kompakte Bauformen
+
+Slim­line-Tas­ta­tur von Apple mit Insel­tasten
+Kompakttastaturen nehmen eine kleinere Grundfläche ein als herkömmliche Tastaturen und eignen sich damit besonders für Anwendungsfälle, in denen wenig Platz zur Verfügung steht, beispielsweise auf den Knien von Rollstuhlfahrern. Ein anderer Anwendungsfall sind sogenannte Slimline-Tastaturen, die meist eine normale Tastaturbelegung aufweisen, aber wesentlich flacher (slim = „schlank“) sind.
+
+Für Anwendungsfälle, in denen die Mobilität im Vordergrund steht, gibt es Klapptastaturen sowie flexible Tastaturen aus Kunststoff, die man einrollen kann. Aus Gummi gefertigte Modelle sind zusätzlich wasserdicht und auch gegen andere Flüssigkeiten resistent. Klapp- und Gummitastaturen werden als Ergänzung zu den bauformbedingt sehr kleinen Bildschirmtastaturen von PDAs und anderen tragbaren Tablet-Computern wie dem iPad angeboten.
+
+Inseltastatur
+Als Inseltastatur, Insel-Design, Insel-Look oder englisch Island Style wird eine Tastatur bezeichnet, bei der zwischen den Tasten ein Abstand besteht; das Gehäuse der Tastatur hat dementsprechend einzelne Löcher für jede Taste. Daher hat eine derartige Tastatur eine gewisse Ähnlichkeit mit Kaugummitastaturen, welche ebenfalls (konstruktionsbedingt) für jede Taste ein einzelnes Loch haben. Dementsprechend kann der englische Begriff chiclet keyboard für beide Arten stehen.[8]
+
+LCD-Tastaturen
+Bereits 1985 wurde eine Tastatur vorgestellt, deren Tasten mit kleinen LCDs versehen waren, wodurch ihre Beschriftung vom Benutzer jederzeit umprogrammiert werden konnte.[9] Ein aktuelles Beispiel solcher Konstruktionen (Stand März 2017) ist die Optimus-Maximus-Tastatur. Wegen des erheblich höheren Preises müssen derartige Geräte als Nischenprodukte angesehen werden. Auch Tastaturen auf Grundlage eines Touchscreens[10] konnten sich bislang als eigenständiges Peripheriegerät nicht durchsetzen.
+
+Projizierte virtuelle Tastatur
+
+Projizierte virtuelle Laser-Tastatur.
+Bei dieser Form der Tastatur wird ein projiziertes Tastenfeld auf einer beliebigen ebenen Oberfläche erzeugt und die Benutzeraktion darauf mit einer Kamera erfasst. Das Gerät erkennt mittels Bildverarbeitung, welche Felder berührt werden, und leitet die Information an den Computer weiter (nicht zu verwechseln mit der Virtuellen Tastatur).
+
+Schwarzschrifttastatur
+Dieser Begriff bezeichnet im Zusammenhang mit Tastaturen für Blinde jede Computertastatur mit auf den Tasten aufgedruckten Schriftzeichen im Gegensatz zu der speziell für Blinde entwickelten Punktschriftmaschine. Bei Kenntnis des Tastschreibens und in Verbindung mit einer Braillezeile kann eine solche herkömmliche Tastatur auch von Blinden benutzt werden.
+
+Einhandtastaturen
+
+Gamer-Einhandtastatur „Flexiglow CyberSnipa“, 2008
+Einhandtastaturen werden verwendet, wenn dem Bediener nur eine Hand zur Tastaturbedienung zur Verfügung steht. Dies kann die Folge körperlicher Einschränkungen sein, oder in Situationen, in denen die andere Hand für ein anderes Bedienelement gebraucht wird.
+
+Letzteres ist beispielsweise bei Computerspielen der Fall, die eine unterbrechungsfreie Bedienung mit der Maus erfordern, so dass nur die andere Hand zur gleichzeitigen Tastatureingabe zur Verfügung steht. Bei solchen Spielen sind deshalb die notwendigen Tastatureingaben in der Regel auf Tasten beschränkt, die auf der linken Seite der Standardtastatur angeordnet sind und somit mit einer Hand ohne Verlagerung des Handballens (und damit verzögerungsfrei) erreichbar sind. Für diese Anwendungen eignen sich die speziellen Gamer-Einhandtastaturen, die nur diese Tasten enthalten (zumeist ergänzt um Tasten für sämtliche Ziffern), diese aber in einer für Computerspielbedienung optimierten Weise anordnen. Für Standard-Computeranwendungen wie Textverarbeitung sind solche Tastaturen jedoch ungeeignet.
+
+Einhandtastaturen mit dem vollständigen Umfang einer Standardtastatur werden in der Regel als Artikel für die berufliche Rehabilitation im entsprechenden Fachhandel angeboten.
+
+Akkordtastaturen
+→ Hauptartikel: Akkordtastatur
+Eine spezielle Form der Einhandtastaturen sind die Akkordtastaturen (englisch chord keyboards), die nur wenige (zumeist unbeschriftete) Tasten besitzen, und bei denen die Eingabezeichen Kombinationen von gleichzeitigen Tastenbetätigungen zugeordnet sind.
+
+Entstehung
+Anfänge
+
+Gummitasten des Sinclair ZX-Spectrum von 1982 mit Programmiersprachen-Befehlen auf der Tastatur
+Bereits die Z3 von Konrad Zuse verfügte über Tasten. Zunächst wurden Fernschreiber mit mechanischen Schreibmaschinentastaturen eingesetzt. Später wurden rein elektronische Tasten verwendet. Die Belegung und Anordnung der Tasten wurde von der Schreibmaschine übernommen. Dazu kamen verschiedene Zusatztasten. Jahrzehntelang galt, dass fast jedes Computermodell über seine spezifische Tastatur verfügte. Das führte vor allem in der Zeit um 1980, zur Blütezeit der 8-Bit-Heimcomputer, zu einer riesigen Vielfalt. Neben der Belegung mit Buchstaben, Ziffern und Sonderzeichen verfügten manche Computer über Grafikzeichen, einige sogar über Programmiersprachen-Befehle (zum Beispiel in BASIC) auf der Tastatur. Beispiele dafür sind die Tastaturen des Commodore 64 oder des Sinclair ZX81. Oft war eine Taste mit dem Firmenzeichen des Herstellers vorhanden.
+
+Je mehr sich der IBM-PC und dessen Nachfolger am Markt durchsetzten, verdrängte zunächst die sogenannte XT-Tastatur, dann AT-Tastatur und später die MF2-Tastatur alle anderen Tastaturtypen. Neben der PC-Tastatur hat sich heute einzig noch die Apple-Tastatur behaupten können, die jedoch inzwischen eine sehr ähnliche Tastenbelegung aufweist.
+
+Standardisierung: IBM-PC-Tastatur und Apple-Tastatur
+PC-Tastatur
+Durch die weite Verbreitung des IBM-PCs wurde auch dessen Tastatur zum meistbenutzten Typ. Obwohl die Tastaturen für IBM-PCs einem einheitlichen Standard folgen, haben sich in 25 Jahren PC-Geschichte durch Erweiterungen und lokale Anpassungen (Umlaute etc.) viele verschiedene Tastaturtypen entwickelt:
+
+
+IBM-XT-Tastatur mit 83 Tasten. Mit den 10 Funktionstasten links, aus den frühen 1980er Jahren.
+
+IBM-AT-Tastatur mit 84 Tasten. Mit den 10 Funktionstasten links, aus den frühen 1980er Jahren.
+
+IBM Model M ab 1985. Führte das Enhanced-101-Tasten-Layout ein, welches in geringen Abweichungen (z. B. Hinzufügen von Windows-Tasten) bis heute im PC-Bereich populär ist.
+
+PC-Tastatur mit zusätzlichen Funktionstasten, französisches Layout
+83-Tasten-PC/XT-Tastatur: Funktionstasten F1 bis F10 links außen vertikal, gemeinsame Cursorsteuerung auf Zehnertastatur, Zehnertastatur schließt unmittelbar an übrige Tasten an, wobei einige Tasten nicht klar zuzuordnen sind.
+84-Tasten-AT-Tastatur: Escape-Taste nun im Zehnerblock, Zehnerblock deutlich vom Rest der Tastatur abgesetzt, zusätzliche S-Abf- bzw. SysRq-Taste, neues Protokoll; diese und die folgenden sind untereinander, aber nicht mit der PC/XT-Tastatur austauschbar.
+101-Tasten-MF2-Tastatur: US-Variante 1985, sogenanntes „Enhanced“-Layout[11][12][13] mit dem Model-M, zusätzlicher mittlerer Tastenblock mit eigenständigen Cursortasten getrennt vom Zehnerblock sowie Esc- und Funktionstasten nun oben horizontal angeordnet, neu: F11 und F12, zweite Ctrl und zweite Alt-Taste, Divisionstaste im Zehnerblock, eigenständige Pause-Taste, dafür fällt die eigenständige SysRq-Taste weg.
+102 Tasten: Entsprechende nicht-US-amerikanische Variante der Tastatur mit 101 Tasten, zusätzlicher Taste rechts der linken Umschalttaste; erstmals Alt Gr-Funktion (ersetzt zweite Alt-Taste); abgewandeltes Layout der Enter-Taste. Auch meistens bei deutschen Tastaturen verwendet.
+104 Tasten: Zwei Windows-Tasten und eine Kontextmenü-Taste wurden von Microsoft mit Erscheinen von Microsoft Windows 95 eingeführt. Diese sind links bzw. rechts neben der Leertaste platziert (links zwischen Strg/Ctrl-Taste und Alt-Taste, rechts zwischen Alt Gr/-Taste und Strg/Ctrl-Taste).
+105 Tasten: Wie Unterschied von 101 zu 102 Tasten.
+Bild einer US-amerikanischen Tastatur mit 104 Tasten
+Bild einer britischen Tastatur mit 105 Tasten: Wie die US-amerikanische, nur mit zusätzlicher Taste rechts der linken Umschalttaste und abgewandeltem Layout der Enter-Taste
+Bild einer deutschen Tastatur mit 105 Tasten: Wie die britische, nur mit wenigen Veränderungen wie getauschtem Z und Y
+108 Tasten: zusätzliche Tasten Sleep, Wake Up und Power
+Noch höhere Tastenzahlen ergeben sich durch diverse spezielle Sondertasten mancher modernen Tastaturen, etwa für Lautstärke-Änderungen, zum Starten eines Webbrowsers oder eines E-Mail-Programms oder zum Steuern von Multimedia-Programmen.
+Apple-Tastatur
+Die Apple-Tastaturen unterscheiden sich von den PC-Tastaturen nur minimal. Die erweiterte Apple-Tastatur hat 19 Funktionstasten. Diese sind zum Teil mit Funktionen für die Steuerung der Lautstärke (leiser, lauter und stumm) belegt. Zudem existiert eine Taste für das Auswerfen von optischen Datenträgern. Weiter ist der Ziffernblock anders angeordnet und weist eine Sondertaste auf, die programmspezifisch verwendet werden kann. Neben der Leertaste finden sich beiderseits je eine Strg- bzw. Ctrl-Taste (^), eine Wahltaste (⌥) und eine Befehlstaste (⌘), mit deren Hilfe wie auch mit den Umschalttasten nicht nur die Tastatur, sondern auch die Maustasten in vielfältiger Weise mehrfach belegt (bis zu 16-fach) verwendet werden. Die Druck-/Print-Screen-Taste, die Rollen/Scroll Lock-Taste, die Pause-Taste, die Einfg/Insert-Taste, die Alt-Gr-Taste wie auch die Windows-Taste gibt es auf einer Apple-Tastatur nicht. Auch die Belegung des @-Zeichens ist bei Apple-Tastaturen, welche nicht die US-amerikanische Belegung haben, anders. Das Zeichen wird bei der deutschen Tastaturbelegung durch Drücken der Tasten ⌥ (Wahltaste)+L und mit schweizerischem Layout per ⌥+G eingefügt.
+
+Für Umsteiger von einer PC-Tastatur auf den Mac wirkt sich am verwirrendsten wohl die Verschiebung der eckigen und der Mengenklammern aus: Letztere werden bei deutschem und schweizerischem Layout durch ⌥+8 bzw. 9 erzeugt, also über die Tasten für die entsprechenden runden Klammern, mit denen aber beim PC die eckigen Klammern erzeugt werden. Diese liegen bei der Apple-Tastatur auf ⌥+5 bzw. 6. Auch die Pipe, der senkrechte Strich, wird nicht per ⌥+< erreicht, sondern via ⌥+7. Über ⌥+Shift+7 gelangt man zum Backslash.
+
+Generell lassen sich Apple-Tastaturen neuerer Bauart (USB) auch relativ problemlos auf PC-Systemen betreiben, wobei die Befehlstaste (cmd) dann als Windows-Taste fungiert. Dadurch hat die rechte Alt Taste die Funktion von Alt Gr. Die Tastenbelegung ist ansonsten wie am PC gewohnt. Das @-Zeichen ist also nicht auf L beziehungsweise G, sondern auf Q auf deutschen beziehungsweise 2 auf schweizerischen Tastaturen.
+
+Weitere Eingabegeräte
+Eingabegeräte nach gleichem Funktionsprinzip
+Computer-Tastaturen: Großfeldtastatur, Kleinfeldtastatur, Funktastatur, Braille-Tastatur mit sechs Tasten
+Tastaturen an Musikinstrumenten: Klaviatur, Pedal
+Tastatur eines Mobiltelefons: Die Tastatur stellt Zeichen mit einer Mehrfachbelegung auf den Ziffertasten dar.
+Industrie- und Spezialtastaturen
+Schreibmaschinentastatur
+Werden Tastaturen für einen bestimmten Zweck optimiert, so sind sie unter Umständen für andere Zwecke schlechter geeignet. So sind Tastaturen an Überweisungs- und Geldautomaten, die viele unterschiedliche Menschen verwenden oder der Witterung ausgesetzt sind, aus Metall und weisen einen geringen Tastenspielraum auf. Das ermöglicht Langlebigkeit und nahezu unzerstörbare Eigenschaften, aber kein flüssiges Schreiben.
+
+Eingabegeräte nach anderen Funktionsprinzipien
+Auch wenn die Tastatur bis heute das dominierende Eingabegerät ist, haben sich im Lauf der Jahrzehnte doch eine Reihe von Alternativen etabliert.
+
+Eine Alternative bildet der sogenannte Touchscreen. Dabei handelt es sich um einen Bildschirm, auf dem berührungsempfindliche Felder liegen, die zur Eingabe verwendet werden können. Durch die Kombination von Tastatur und Bildschirm in einem Gerät lässt sich vor allem Platz sparen. Die fehlende taktile Rückmeldung, beispielsweise ein Druckpunkt als fühlbare Tipp-Bestätigung, ist nur wichtig für ungeübte Schreiber und für Dateneingabe ohne sichtbare Rückmeldung und spielt für die Eingabe von Fließtext keine Rolle.
+
+Weitere Alternativen bilden sogenannte Zeigegeräte. Dabei handelt es sich um Geräte, mit denen ein Zeigersymbol über den Bildschirm bewegt werden kann. Beispiele für Zeigergeräte sind: Maus, Touchpad, Joystick, Trackball, Trackpoint, Rollstangenmaus und Lichtgriffel.
+
+Weitere Alternativen sind:
+
+Lasertastatur. Ein Tastenfeld wird mit einem Laserstrahl auf den Tisch oder eine helle Fläche projiziert. Die Abtastung wird optisch ausgewertet (s. o. bei Projizierte virtuelle Tastatur).
+Bildschirmtastatur. Die Tastatur wird auf dem Bildschirm dargestellt und zum Beispiel mit der Maus oder mit einem Stift (bei einem Sensorbildschirm bzw. Touchscreen) betätigt.
+Tastentechnik
+Mechanische Tasten
+	Dieser Artikel oder Abschnitt bedarf einer Überarbeitung. Näheres ist auf der Diskussionsseite angegeben. Hilf mit, ihn zu verbessern, und entferne anschließend diese Markierung.
+
+Taste mit scherenartiger Führung, die beim Niederdrücken (unten) wie ein Liegestuhl zusammenklappt.
+Einige der herkömmlichen Tastaturen haben eine Schraubenfeder für die Rückstellung und eine Führung, die ein Verkanten der Taste vermeiden soll. Tasten, die mehr als einen Rasterplatz belegen, haben zusätzlich Bügel, die einen Lageausgleich gegen Verkanten unterstützen. Früher waren Federn in der Regel aus rostfreiem oder rostgeschütztem Stahldraht, heute sind die Tasten bei geringerer Bauhöhe leichter und Federung, Druckpunkt, Rastung, Parallelführung (auch der längeren Tasten) sowie Montage und Demontierbarkeit wird häufig durch eine gespreizte Doppelschere aus selbstschmierendem Kunststoff erreicht.
+
+Buckling spring torsional snap actuator: Illustration einer Knickfeder-Taste mit taktilem und akustischem Feedback. Patent US4118611.‌
+
+Tastenkraft-über-Tastenweg-Diagramm einer taktilen Knickfeder-Taste. In Punkt 1C der plötzliche Widerstandsabfall beim Knicken der Feder/Durchschalten, was als taktiles Feedback wirkt. Patent US4118611.‌
+Eine Variante von mechanischen Schraubenfedertasten aus den 1980ern sind sogenannte Knickfeder-Tasten (engl. „buckling spring“), bei denen die Feder nicht rein axial zusammengepresst wird, sondern auch vertikal Kräfte erfährt und dann plötzlich, unter massiv nachlassender Gegenkraft, umknickt und durchschaltet. Die umknickenden Federn erzeugen ein deutliches Geräusch, was als akustisches Feedback wirkt, die plötzlich nachlassende Widerstandskraft wirkt als taktiles Feedback. Bekanntester Vertreter dieser Technik ist die IBM-Model-M-Reihe, die zwischen 1985 und 1999 gebaut und weitverbreitet war.
+Einige Notebook-Tastaturen, wie HP/Compaq, Acer, haben für jede Taste scherenartige Führungen, die beim Niederdrücken wie Liegestühle zusammenklappen. Diese Mechanik besteht aus zwei geschlossenen Bügeln, die an den Enden über Gelenke miteinander verbunden sind. Diese Bügel sind einerseits an dem unteren Enden mit der Leiterplatte und andererseits an den gegenüberliegenden Enden über Schnappverbindungen mit der Unterseite der bedruckten Tasten verbunden. Auf diese Weise ist sichergestellt, dass die Tasten – vergleichsweise wie bei Scherenhebebühnen – immer etwa senkrecht zur Leiterplatte bewegt werden.
+Robuste Tastaturen haben eventuell eine runde, konvex gewölbte metallische Blattfeder mit einem Druckpunkt (vor dem Springen in die konkave Form), der eine bestimmte Mindestkraft zur Überwindung der signal- oder kontaktlosen Ruhelage erfordert. Damit wird dem Benutzer eine taktile Rückmeldung gegeben.
+
+Cherry-MX-Taster für Tastaturen: Cherry MX Blue geschlossen (links) und Cherry MX Brown, geöffnet (Mitte und rechts).Patent US4467160.‌
+
+Ein Alps-SKBM-Grey-Taster für Tastaturen.
+Die Leertaste ist stabilisiert. Bei einigen Tastaturen wie der „IBM Model M“ sind längere und breitere Tasten wie Umschalter, Enter, Backspace sowie „0“ und „+“ am Ziffernblock stabilisiert. Bei billiger gefertigten werden diese Tasten über Stifte geführt.
+Rubberdome-Tastatur
+Eine gegenüber mechanischen Konstruktionen kostengünstigere Bauform baut auf der Rubberdome-Technik auf. Namensgebend sind hier Gummiglocken, die für die entsprechende Gegenkraft und das taktile Feedback beim Tippen sorgen. Wie es der Werkstoff Gummi erwarten lässt, wird so ein weicheres Tippgefühl und eine deutlich verringerte Lärmbelästigung erreicht. Ein Nachteil ist jedoch die geringere Langlebigkeit und das über die Zeit sich ändernde mechanische Feedback. Kunststoff ist ein alternder Werkstoff, bei dem sich seine Eigenschaften über die Zeit verändern. Rubberdome-Tastaturen haben zumeist einen Key-Rollover von 2, es können also maximal zwei Tasten gleichzeitig gedrückt werden.[14]
+
+Kapazitiver Kontakt
+(IBM Model F oder Cherry-G3000-Tastatur)
+
+Mechanische Trägerplatte mit Führung beweglicher Stößel – diese tragen an der Platinenseite eine Schaumgummiauflage mit einer Metallfolie, die mit einer isolierenden Kunststofffolie bedeckt ist.
+Auf der Leiterplatte befinden sich zwei nebeneinanderliegende Flächen, welche durch eine dazwischen liegende, mit Masse verbundene, Leiterbahn entkoppelt sind.
+Beim Niederdrücken des Stößels bedeckt die Metallfolie beide Flächen, so dass diese kapazitiv miteinander verbunden sind.
+Elektromechanische Kurzhubtasten
+Diskreter Taster in Kombination mit einem mechanischen Überbau, je nach Hersteller individuell ausgeführt.
+Montage direkt auf einer Leiterplatte, Anschlussfahnen zur elektrischen Kontaktierung.
+Bedeutende Hersteller sind beispielsweise die deutsche Cherry GmbH mit der MX-Schalter-Serie, welche seit ca. 1985 in vielen Varianten gebaut wird, und die japanische Alps Denki K.K mit ihren ALPS-Tasten, die unter anderem in den ersten Apple-Tastaturen verbaut wurden. Die MX-Schalter-Serie umfasst Tastertypen mit verschiedenen Feedbacks und unterschiedlichen Druckpunkten. Zur Serie gehören zum Beispiel MX Blue, MX Black, MX Red, MX Clear und MX Brown.
+Karbonkontakt mit Kunststoffstößel und Silikonhaube
+Kunststoffgehäuse zur Führung eines beweglichen Stößels – dieser trägt an der Platinenseite eine leitfähige Kontaktpille.
+Realisierung von Tasten-Rückstellkraft und Abdichtung mittels einer Silikonhaube.
+Stößel mit Fitting bedienerseitig zur Aufnahme einer Tastenkappe – mechanische Aufnahme der Gesamteinheit in einer Metallstützplatte.
+Flexible Folientastatur mit Silikonüberbau
+Realisierung des Schaltkontakts durch zwei einander zugewandte, leitfähig bedruckte Polyesterfolien (im Ruhezustand von einer Abstandsfolie getrennt).
+Betätigung der Folie und Realisierung der Rückstellkraft durch eine Silikonmatte.
+Tastenkappe wird auf die Silikonmatte aufgesetzt.
+Einbettung des Ganzen in eine Anordnung aus Front- und Stützplatte.
+Silikontastatur (direktes Schaltprinzip)
+
+Eine in Einzelteile zerlegte PC-Tastatur in Silikonhaubentechnik
+Schaltkontakt ergibt sich aus mäanderförmigem Kontakt auf der Leiterplatte bzw. einer einlagigen, leitfähig bedruckten Folie und leitfähiger Pille an der Unterseite einer darüber liegenden Silikonschaltmatte.
+Einbettung des Ganzen in eine Anordnung aus Front- und Stützplatte.
+Flacheingabeprinzip (Metall-Schnappscheibe auf Leiterplatte)
+Schaltkontakt wird gebildet aus Leiterplattenkontakt und darüber befindlicher Metall-Schnappscheibe (meist vergoldet).
+Einbettung des Ganzen in eine Anordnung aus Front- und Stützplatte.
+Piezoschalter
+Einbettung eines diskreten Piezoschaltelements in eine Metallfrontplatte, alternativ Nutzung mit piezoelektrischem Lack bedruckter Folien.
+Tastenbetätigung ohne fühlbaren Tastenhub, Auswertung des Ladungsstoßes.
+Hall-Sensor
+Ein Permanentmagnet unter jeder Taste fährt beim Anschlag an einem Hall-Sensor auf der Bodenplatte vorbei. Der Sensor registriert die Bewegung des Tastenmagneten und meldet sie an den Controller.
+Hall-Tastaturen sind nahezu unverwüstlich, langlebig (viele Hersteller geben > 1'000'000 Anschläge als Lebensdauer an) und unempfindlich gegen störende elektromagnetische Felder und ionisierende Strahlung. Bei entsprechender Bauweise sind sie auch staub- und wasserdicht.
+Einsatzgebiete: Bordcomputer in Flugzeugen und Raumschiffen, Maschinensteuerungen
+Sehr teuer, da ein Sensor pro Taste benötigt wird, daher in Büroanwendungen kaum anzutreffen. Eine der wenigen Ausnahmen waren einige Tastaturen (K7604 und K7606) des DDR-Herstellers Robotron.[15]
+Sonstiges
+Als Hilfe zum Blindschreiben haben Computertastaturen meist zwei haptische Markierungen auf den Tasten der Buchstaben F und J sowie eine Markierung für das Zentrum des Nummernfelds auf der Taste für die Ziffer 5. Dabei handelt es sich um fühlbare Erhebungen in Form eines Punktes oder eines Striches (Fühlbalken[16]), oder eine fühlbar abweichende Formgebung der Tasten. Diese erleichtern das Auffinden der Tasten (Positionierungen) und werden daher als Orientierungstasten bezeichnet.
+
+Siehe auch
+Tastaturbelegung, Tastenkombination
+Zehnfingersystem
+Eingabesysteme für die chinesische Schrift
+Anlaut-Tastatur
+Virtuelle Datentastatur
